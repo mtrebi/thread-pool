@@ -49,7 +49,7 @@ public:
       m_last = new_node;
     }
 
-    --m_size;
+    ++m_size;
   }
   
   Task* dequeue() {
