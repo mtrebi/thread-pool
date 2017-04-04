@@ -21,6 +21,12 @@ public:
     m_size = 0;
   }
 
+  ~TasksQueue() {
+    for (int i = 0; i < size(); ++i) {
+      dequeue();
+    }
+  }
+
   bool is_empty() const {
     return m_size == 0;
   }
@@ -65,5 +71,6 @@ public:
     --m_size;
     return data;
   }
+
 
 };
