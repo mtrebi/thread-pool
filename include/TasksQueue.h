@@ -2,7 +2,7 @@
 
 #include "Task.h"
 
-// Linked list implementation of a Queue
+//TODO: Thread safe implementation of a Queue using a Singly Linked list
 class TasksQueue {
 private:
   struct Node {
