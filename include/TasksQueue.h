@@ -1,75 +1,50 @@
 #pragma once
 
-// Thread safe implementation of a Queue using a Singly Linked list
-template <class T>
-class ThreadSafeQueue {
+#include <mutex>
+#include <queue>
+
+// Thread safe implementation of a Queue using a std::queue
+template <typename T>
+class SafeQueue {
 private:
-  struct Node {
-    T data;
-    struct Node * next;
-  };
-
-  Node * m_first,
-       * m_last;
-
-  int m_size;
+  std::queue<T> m_queue;
+  std::mutex m_mutex;
 public:
-  ThreadSafeQueue() {
-    m_first = nullptr;
-    m_last = nullptr;
-    m_size = 0;
+  SafeQueue() {
+
   }
 
-  ~ThreadSafeQueue() {
-    for (int i = 0; i < size(); ++i) {
-      dequeue();
-    }
+  SafeQueue(SafeQueue& other) {
+
   }
 
-  bool empty() const {
-    return m_size == 0;
+  ~SafeQueue() {
+
+  }
+
+
+  bool empty() {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_queue.empty();
   }
   
-  int size() const {
-    return m_size;
+  int size() {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    return m_queue.size();
   }
-  
+
   void enqueue(T& t) {
-    Node * new_node = new Node();
-    new_node->data = t;
-    new_node->next = nullptr;
-
-    if (empty()) {
-      m_first = new_node;
-      m_last = new_node;
-    }
-    else {
-      m_last->next = new_node;
-      m_last = new_node;
-    }
-
-    ++m_size;
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_queue.push(t);
   }
   
-  T dequeue() {
-    if (empty()) {
-      return nullptr;
-    }
+  bool dequeue(T& t) {
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-    T data = m_first->data;
-    if (size() == 1) {
-      free(m_first);
-      m_first = nullptr;
-      m_last = nullptr;
+    if (m_queue.empty()) {
+      return false;
     }
-    else {
-      Node * new_first = m_first->next;
-      free(m_first);
-      m_first = new_first;
-    }
-    --m_size;
-    return data;
+    t = m_queue.front();
+    m_queue.pop();
   }
-
-
 };
