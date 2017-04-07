@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Task.h"
-
-//TODO: Thread safe implementation of a Queue using a Singly Linked list
-class TasksQueue {
+// Thread safe implementation of a Queue using a Singly Linked list
+template <class T>
+class ThreadSafeQueue {
 private:
   struct Node {
-    Task * data;
+    T data;
     struct Node * next;
   };
 
@@ -15,19 +14,19 @@ private:
 
   int m_size;
 public:
-  TasksQueue() {
+  ThreadSafeQueue() {
     m_first = nullptr;
     m_last = nullptr;
     m_size = 0;
   }
 
-  ~TasksQueue() {
+  ~ThreadSafeQueue() {
     for (int i = 0; i < size(); ++i) {
       dequeue();
     }
   }
 
-  bool is_empty() const {
+  bool empty() const {
     return m_size == 0;
   }
   
@@ -35,12 +34,12 @@ public:
     return m_size;
   }
   
-  void enqueue(Task& task) {
+  void enqueue(T& t) {
     Node * new_node = new Node();
-    new_node->data = &task;
+    new_node->data = t;
     new_node->next = nullptr;
 
-    if (is_empty()) {
+    if (empty()) {
       m_first = new_node;
       m_last = new_node;
     }
@@ -52,12 +51,12 @@ public:
     ++m_size;
   }
   
-  Task* dequeue() {
-    if (is_empty()) {
+  T dequeue() {
+    if (empty()) {
       return nullptr;
     }
 
-    Task * data = m_first->data;
+    T data = m_first->data;
     if (size() == 1) {
       free(m_first);
       m_first = nullptr;
