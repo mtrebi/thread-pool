@@ -1,12 +1,15 @@
 #pragma once
 
-#include <thread>
+#include <functional>
+#include <future>
 #include <mutex>
+#include <thread>
+#include <utility>
 #include <vector>
+#include <queue>
 
 #include "Task.h"
 #include "TasksQueue.h"
-
 
 class ThreadPool {
 private:
@@ -20,6 +23,7 @@ private:
     }
 
     void operator()() {
+      /*
       Task * task;
       while (!m_pool->m_shutdown) {
         {
@@ -32,7 +36,25 @@ private:
         if (task) {
           task->execute();
         }
+      }*/
+      
+      std::function<void()> f;
+      while (!m_pool->m_shutdown) {
+        {
+          std::unique_lock<std::mutex> lock(m_pool->m_mutex_queue);
+          if (m_pool->queue.empty()) {
+            m_pool->m_conditional_lock.wait(lock);
+          }
+          f = m_pool->queue.front();
+          m_pool->queue.pop();
+        } // Release of m_mutex_queue
+        if (f) {
+          f();
+          int a = 2;
+        }
       }
+
+
     }
 
   };
@@ -40,6 +62,7 @@ private:
   bool m_shutdown;
   TasksQueue m_queue;
   std::vector<std::thread> m_threads;
+  std::queue<std::function<void()>> queue;
   std::mutex m_mutex_queue;
   std::condition_variable m_conditional_lock;
 public:
@@ -66,11 +89,51 @@ public:
 
   //TODO: return future/promise
   // Subit tasks to be performed by the pool
+
   void submit(Task * task) {
-    {
-      std::unique_lock<std::mutex> lock(m_mutex_queue);
-      m_queue.enqueue(*task);
-    } // Release of m_mutex_queue
+    m_queue.enqueue(*task);
     m_conditional_lock.notify_one();
   } 
+
+
+  template<typename F, typename...Args>
+  void submit(F&& f, Args&&... args) {
+    //TODO std::queue of functions
+    std::function<void()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+    queue.push(func);
+    int a = 2;
+  }
+
+
+  /*
+  template<typename F, typename ... Args>
+  //auto
+   void
+  submit(F && f, Args && ... args) -> std::future<decltype(f)> {
+    //packaged_task
+    using return_type = typename std::result_of<F(Args...)>::type;
+    
+    std::packaged_task<decltype(f)> task(
+      std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+    );
+
+
+    auto _f = new std::function<void()>()
+      // Bind function with parameters -> Only call bind
+      ;
+
+    //auto promise = std::packaged_task<decltype(f)
+    //auto a = std::forward<FunctorType>(f);
+    //auto function = std::function <void(int, int)>(a);
+    //auto future = task->get_future();
+    //return future;
+  }
+  */
+  /*
+  template<typename FunctorType>
+  auto submit(FunctorType && f) -> std::future<decltype(f)> {
+  //std::forward<FunctorType>(f)
+  return nullptr;
+  }
+  */
 };
