@@ -8,7 +8,7 @@
 #include <vector>
 #include <queue>
 
-#include "TasksQueue.h"
+#include "SafeQueue.h"
 
 class ThreadPool {
 private:
