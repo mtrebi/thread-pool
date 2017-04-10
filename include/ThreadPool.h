@@ -22,7 +22,7 @@ private:
     }
 
     void operator()() {
-      std::packaged_task<void()> task;
+      std::shared_ptr<std::packaged_task<void()>> task_ptr;
       bool empty;
       while (!m_pool->m_shutdown) {
         {
@@ -30,17 +30,18 @@ private:
           if (m_pool->m_queue.empty()) {
             m_pool->m_conditional_lock.wait(lock);
           }
-          empty = m_pool->m_queue.dequeue(task);
+          empty = m_pool->m_queue.dequeue(task_ptr);
         }
         if (!empty) {
-          task();
+          std::packaged_task<void()>* task = task_ptr.get();
+          (*task)();
         }
       }
     }
   };
 
   bool m_shutdown;
-  SafeQueue<std::packaged_task<void()>> m_queue;
+  SafeQueue<std::shared_ptr<std::packaged_task<void()>>> m_queue;
   std::vector<std::thread> m_threads;
   std::mutex m_mutex_queue;
   std::condition_variable m_conditional_lock;
@@ -74,17 +75,16 @@ public:
 
   // Submit a function to be executed asynchronously by the pool
   template<typename F, typename...Args>
-  auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+  std::future<void> submit(F&& f, Args&&... args) {
     // Create a function with bounded parameters ready to execute
     std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-    // Encapsulate function inside task and promise to return a future
-    std::packaged_task<decltype(f(args...))()> task(func);
+    // Encapsulate it into a shared ptr in order to be able to copy construct / assign 
+    std::shared_ptr<std::packaged_task<void()>> task_ptr = std::make_shared<std::packaged_task<void()>>(func);
 
-    auto future = task.get_future();
-
-    m_queue.enqueue(std::move(task));
+    m_queue.enqueue((task_ptr));
     m_conditional_lock.notify_one();
 
-    return future;
+    // Return future from promise
+    return task_ptr->get_future();
   }
 };
