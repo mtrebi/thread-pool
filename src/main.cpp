@@ -48,6 +48,5 @@ int main() {
   multiply_future.get();
   std::cout << "Last operation result is equals to " << res << std::endl;
 
-  _sleep(10000);
   pool.shutdown();
 }
