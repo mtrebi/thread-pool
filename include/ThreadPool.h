@@ -3,10 +3,10 @@
 #include <functional>
 #include <future>
 #include <mutex>
+#include <queue>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <queue>
 
 #include "SafeQueue.h"
 
@@ -22,7 +22,7 @@ private:
     }
 
     void operator()() {
-      std::function<void()> func;
+      std::packaged_task<void()> task;
       bool empty;
       while (!m_pool->m_shutdown) {
         {
@@ -30,17 +30,17 @@ private:
           if (m_pool->m_queue.empty()) {
             m_pool->m_conditional_lock.wait(lock);
           }
-          empty = m_pool->m_queue.dequeue(func);
+          empty = m_pool->m_queue.dequeue(task);
         }
         if (!empty) {
-          func();
+          task();
         }
       }
     }
   };
 
   bool m_shutdown;
-  SafeQueue<std::function<void()>> m_queue;
+  SafeQueue<std::packaged_task<void()>> m_queue;
   std::vector<std::thread> m_threads;
   std::mutex m_mutex_queue;
   std::condition_variable m_conditional_lock;
@@ -48,6 +48,12 @@ public:
   ThreadPool(const int n_threads)
     : m_threads(std::vector<std::thread>(n_threads)), m_shutdown(false) {
   }
+
+  ThreadPool(const ThreadPool &) = delete;
+  ThreadPool(ThreadPool &&) = delete;
+
+  ThreadPool & operator=(const ThreadPool &) = delete;
+  ThreadPool & operator=(ThreadPool &&) = delete;
 
   // Inits thread pool
   void init() {
@@ -66,11 +72,17 @@ public:
     }
   }
 
-  //TODO: return future/promise
+  // Submit a function to be executed asynchronously by the pool
   template<typename F, typename...Args>
-  void submit(F&& f, Args&&... args) {
-    std::function<void()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-    m_queue.enqueue(func);
+  auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+    // Create a function with bounded parameters ready to execute
+    std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+    // Encapsulate function inside task and promise to return a future
+    std::packaged_task<decltype(f(args...))()> task(func);
+
+    m_queue.enqueue(std::move(task));
     m_conditional_lock.notify_one();
+
+    return task.get_future();
   }
 };
