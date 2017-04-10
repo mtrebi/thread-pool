@@ -80,9 +80,11 @@ public:
     // Encapsulate function inside task and promise to return a future
     std::packaged_task<decltype(f(args...))()> task(func);
 
+    auto future = task.get_future();
+
     m_queue.enqueue(std::move(task));
     m_conditional_lock.notify_one();
 
-    return task.get_future();
+    return future;
   }
 };
