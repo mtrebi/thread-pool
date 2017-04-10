@@ -26,7 +26,7 @@ private:
       bool empty;
       while (!m_pool->m_shutdown) {
         {
-          std::unique_lock<std::mutex> lock(m_pool->m_mutex_queue);
+          std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
           if (m_pool->m_queue.empty()) {
             m_pool->m_conditional_lock.wait(lock);
           }
@@ -43,7 +43,7 @@ private:
   bool m_shutdown;
   SafeQueue<std::shared_ptr<std::packaged_task<void()>>> m_queue;
   std::vector<std::thread> m_threads;
-  std::mutex m_mutex_queue;
+  std::mutex m_conditional_mutex;
   std::condition_variable m_conditional_lock;
 public:
   ThreadPool(const int n_threads)
