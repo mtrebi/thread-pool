@@ -33,9 +33,10 @@ public:
     return m_queue.size();
   }
 
+
   void enqueue(T& t) {
     std::unique_lock<std::mutex> lock(m_mutex);
-    m_queue.push(t);
+    m_queue.emplace(std::move(t));
   }
   
   bool dequeue(T& t) {
@@ -44,7 +45,8 @@ public:
     if (m_queue.empty()) {
       return false;
     }
-    t = m_queue.front();
+    t = std::move(m_queue.front());
+    
     m_queue.pop();
   }
 };
