@@ -163,20 +163,20 @@ And finally, we return the future of the packaged_task. Because we are returning
 
 Now that we understand how the submit method works, we're going to focus on how the work gets done. Probably, the simplest implementation of a thread worker could be using polling:
 
-1. Loop
-	1. If Queue is not empty
-		1. Unqueue work
-		2. Do it
+	 Loop
+		If Queue is not empty
+			Unqueue work
+			Do it
 
-This looks alright but it's **not very efficient**. Doyou see why? What would happen if there is no work in the Queue? The threads would keep looping and asking **all the time: Is the queue empty? ** 
+This looks alright but it's **not very efficient**. Doyou see why? What would happen if there is no work in the Queue? The threads would keep looping and asking all the time: Is the queue empty? 
 
 The more sensible implementation is done by "sleeping" the threads until some work is added to the queue. As we saw before, as soon as we enqueue work, a signal **notify_one()** is sent. This allows us to implement a more efficient algorithm:
 
-1. Loop
-	1. If Queue is empty
-		1. Wait signal
-	2. Unqueue work
-	3. Do it
+	Loop
+		If Queue is empty
+			Wait signal
+		Unqueue work
+		Do it
 
 This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the Thread Pool class just to manage this. The final code of a worker looks like this: 
 
