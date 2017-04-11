@@ -4,7 +4,7 @@ A [thread pool](https://en.wikipedia.org/wiki/Thread_pool) is a technique that a
 
 There are many many Thread pool implementations in C++, many of them are probably better (safer, faster...) than mine. However,  I belive my implementation is **very straightforward and easy to understand**. 
 
-# Thread pool
+# Thread pool 
 
 The way that I understand things better is with images. So, lets take a look at the image of Thread Pool given by wikipedia:
 
@@ -30,7 +30,7 @@ void enqueue(T& t) {
 ``` 
 To enqueue the first thing we do is lock the mutex to make sure that no one else is accessing the resource. Then, we push the element to the queue. When the lock goes out of scopes it gets automatically released. Easy, huh? This way, we make the Queue thread-safe and thus we don't have to worry many threads accessing and/or modifying it at the same "time".
 
-## Thread pool
+## Submit function
 
 The most important method of the Thread Pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about **what** should do and after that we will worry about **how** to do it. What:
 * Accept any function with any parameters.
