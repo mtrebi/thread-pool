@@ -1,8 +1,8 @@
 # Table of Contents  
-[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#Introduction)  
-[Thread pool](https://github.com/mtrebi/thread-pool/blob/master/README.md#Thread%20Pool)  
-[Usage example](https://github.com/mtrebi/thread-pool/blob/master/README.md#Usage%20example)  
-[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#Future%20work)  
+[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#introduction)  
+[Thread pool](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-pool)  
+[Usage example](https://github.com/mtrebi/thread-pool/blob/master/README.md#usage-example)  
+[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  
 
 # Introduction
 
