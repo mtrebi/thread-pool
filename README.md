@@ -55,70 +55,54 @@ This signal system is implemented in C++ with **conditional variables**. Conditi
 
 ```c
 void operator()() {
-  std::shared_ptr<std::packaged_task<void()>> task_ptr;
-  bool empty;
-  while (!m_pool->m_shutdown) {
-    {
-      std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
-      if (m_pool->m_queue.empty()) {
-        m_pool->m_conditional_lock.wait(lock);
-      }
-      empty = m_pool->m_queue.dequeue(task_ptr);
-    }
-    if (!empty) {
-      std::packaged_task<void()>* task = task_ptr.get();
-      (*task)();
-    }
-  }
+	std::function<void()> func;
+	bool dequeued;
+	while (!m_pool->m_shutdown) {
+	{
+		std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
+		if (m_pool->m_queue.empty()) {
+			m_pool->m_conditional_lock.wait(lock);
+		}
+		dequeued = m_pool->m_queue.dequeue(func);
+	}
+		if (dequeued) {
+	  		func();
+		}
+	}	
 }
 
 ```
 
 ## Thread pool
 
-The most important method of the Thread Pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about what it should do:
-1. It should add some kind of "work" to the queue
-2. It should send a signal to wake a thread in case someone is waiting
-3. It should return "something" the result of the work
+The most important method of the Thread Pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about **what** should do and after that we will worry about **how** to do it. What:
+* Accept any function with any parameters.
+* Return "something" immediately to avoid blocking main thread. This returned object should **eventually** contain the result of the operation.
 
-### Add work to the queue
+Cool, let's see **how** we can implement it.
 
-In order to make something useful, we want the Thread Pool to accept any unit of work. I think the smallest unit of work in a program is a **function**. Our work will be exaclty one function execution. Thus, we want our submit method to get a function with it's parameters and add it to the queue. But, how the hell can we do that? Well, I've discovered many C++ features in order to achieve this effect. Let's start:
+### Submit implementation 
+
+The complete submit functions looks like this:
 
 ```c
+// Submit a function to be executed asynchronously by the pool
 template<typename F, typename...Args>
-``` 
-This means that the next statemnt is templated. In this case, we're saying that the first parameter is a generic function that takes a variable number of arguments.
-
-```c
-std::future<void> submit(F&& f, Args&&... args)
-``` 
-When the type of a parameter is declared as **T&&** for some deducted type T that parameter is a **universal reference**. This term was coined by [Scott Meyers](https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers) because **T&&** can also mean r-value reference. However, in the context of type deduction, it means that it can be bound to both l-values and r-values, unlike l-value references that can only be bound to to non-const objects (they bind only to modifiable lvalues) and r-value references (they bind only to rvalues).
-
-```c
-// Create a function with bounded parameters ready to execute
-std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
-``` 
-There are many many things happening here. The std::function<T> is a C++ object that encapsulates a function. It allows you to execute the function as if it were a normal function calling the method () with the required parameters BUT, because it is an object, you can store it, move it...
-
-In order to know the signature of this function,we use **decltype**. This function inspects the type of an expression. In our case, we give decltype the funcion f with the all the generic and variable parameters args.
-
-
-
-
-The std::bind function takes a function F and a set of parameters to create an object of type std::function that can be executed 
-
-
-
-```c
-template<typename F, typename...Args>
-std::future<void> submit(F&& f, Args&&... args) {
+auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
 	// Create a function with bounded parameters ready to execute
 	std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 	// Encapsulate it into a shared ptr in order to be able to copy construct / assign 
-	std::shared_ptr<std::packaged_task<void()>> task_ptr = std::make_shared<std::packaged_task<void()>>(func);
+	auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
 
-	m_queue.enqueue((task_ptr));
+	// Wrap packaged task into void function
+	std::function<void()> wrapper_func = [task_ptr]() {
+	  (*task_ptr)(); 
+	};
+
+	// Enqueue generic wrapper function
+	m_queue.enqueue(wrapperfunc);
+
+	// Wake up one thread if its waiting
 	m_conditional_lock.notify_one();
 
 	// Return future from promise
@@ -126,7 +110,96 @@ std::future<void> submit(F&& f, Args&&... args) {
 }
 ```
 
+Nevertheless, we're going to inspect line by line what's going on in order to fully understand how it works. 
 
+#### Variadic template function
+
+```c
+template<typename F, typename...Args>
+``` 
+
+This means that the next statemnet is templated. The first template parameter is called F (our function) and second one is a parameter pack. A parameter pack is a special template parameter that can accept zero or more template arguments. It is, in fact, a way to express a variable number of arguments in a template. A template with at least one parameter pack is called **variadic template**
+
+Summarazing, we are telling the compiler that our submit function is going to take one generic parameter of type F (our function) and a parameter pack Args (the parameters of the function F).
+
+#### Function declaration
+
+```c
+auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+``` 
+
+This may seem weird but, it's not. A function, in fact, can be declared using two different syntaxes. The following is the most well known:
+
+```c
+return-type identifier ( argument-declarations... )
+``` 
+
+But, we can also declare the function like this:
+
+```c
+auto identifier ( argument-declarations... ) -> return_type
+ ```
+
+Why to sintaxes? Well, imagine that you have a function that has a return type that depends on the input parameters of the function. Using the first syntax you can't declare that function without getting a compiler error since you  would be using a variable in the return type that has not been declared yet (because the return type declaration goes before the parameters type declaration). 
+
+Using the second syntax you can declare the function to have return type **auto** then, using the -> you can declare the return type depending on the arguments of the functions that have been delcared previously. 
+
+Now, let's inspect the parameters of the submit function. When the type of a parameter is declared as **T&&** for some deducted type T that parameter is a **universal reference**. This term was coined by [Scott Meyers](https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers) because **T&&** can also mean r-value reference. However, in the context of type deduction, it means that it can be bound to both l-values and r-values, unlike l-value references that can only be bound to non-const objects (they bind only to modifiable lvalues) and r-value references (they bind only to rvalues).
+
+
+The return type of the function is of type **std::future<T>**. A std::future is a special type that provides a mechanism to access the result of asynchronous operations, in our case, the result of executing a specific function. This makes sense with what we said earlier.
+
+Finally, the template type of std::future is **decltype(f(args...))**. Decltype is a special C++ keywoard that inspects the declared type of an entity or the type and value category of an expression. In our case, we want to know the return type of the function _f_, so we give decltype our generic function _f_ and the parameter pack _args_.
+
+#### Function body
+
+```c
+// Create a function with bounded parameters ready to execute
+std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+``` 
+
+There are many many things happening here. First of all, the **std::bind(F, Args)** is a function that creates a wrapper for F with the given Args. Caling this wrapper is the same as calling F with the Args that it has been bound. Here, we are simply calling bind with our generic function _f_ and the parameterc pack _args_ but using another wrapper **std::forward<T>(t)** for each parameter. This second wrapper is needed to achieve perfect forwarding of universal references.
+The result of this bind call is a **std::function<T>**. The std::function<T> is a C++ object that encapsulates a function. It allows you to execute the function as if it were a normal function calling the operator() with the required parameters BUT, because it is an object, you can store it, copy it and move it around. The template type of any std::function is the signature of that function: std::function< return-type (arguments)>. In this case, we already know how to get the return type of this function using decltype. But, what about the arguments? Well, because we bound all arguments _args_ to the function _f_ we just have to add an empty pair of parenthersis that represents an empty list of arguments: **decltype(f(args...))()**.
+
+
+```c
+// Encapsulate it into a shared ptr in order to be able to copy construct / assign 
+auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
+```
+
+The next thing we do is we create a **std::packaged_task<T>(t)**.  A packaged_task is a wrapper around a function that can be executed asynchronously. It's result is stored in a shared state inside a std::future<T> object. The templated type T of a std::packaged_task<T>(t) is the type of the function _t_ that is wrapping. Because we said it before, the signature of the function _f_ is **decltype(f(args...))()** that is the same type of the packaged_task. Then, we just wrap again this packaged task inside a **std::shared_ptr** using the initialize function **std::make_shared**.
+
+```c
+// Wrap packaged task into void function
+std::function<void()> wrapperfunc = [task_ptr]() {
+  (*task_ptr)(); 
+};
+
+```
+
+Again, we create a std:.function, but, note that this time its template type is **void()**. Independently of the function _f_ and its parameters _args_ this _wrapperfun_ the return type will always be **void**. Since all functions _f_ may have different return types, the only way to store them in a container (our Queue) is wrapping them with a generic void function. Here, we are just declaring this _wrapperfunc_ to execute the actual task _taskptr_ that will execute the bound function _func_.
+
+
+```c
+// Enqueue generic wrapper function
+m_queue.enqueue(wrapperfunc);
+```
+
+We enqueue this _wrapperfunc_. 
+
+```c
+// Wake up one thread if its waiting
+m_conditional_lock.notify_one();
+```
+
+Before finishing, we wake up one thread in case it is waiting.
+
+```c
+// Return future from promise
+return task_ptr->get_future();
+```
+
+And finally, we return the future of the packaged_task. Because we are returning the future that is bound to the packaged_task _taskptr_ that, at the same time, is bound with the function _func_, executing this _taskptr_ will automatically update the future. Because we wrapped the execution of the _taskptr_ with a generic wrapper function, is the execution of _wrapperfunc_ that, in fact, updates the future. Aaaaand. since we enqueued this wrapper function, it will be executed by a thread after being dequeued calling the operator().
 
 # Usage example
 
@@ -165,7 +238,6 @@ int multiply(const int a, const int b) {
 ```
 
 Then, the submit:
-
 
 ```c
 // The type of future is given by the return type of the function
