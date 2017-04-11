@@ -1,11 +1,11 @@
-# Table of Contents  
-[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#introduction)  
-[Thread pool](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-pool)
-    [Queue](https://github.com/mtrebi/thread-pool/blob/master/README.md#queue)
-    [Submit function](https://github.com/mtrebi/thread-pool/blob/master/README.md#submit-function)  
-    [Thread worker](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-worker)  
-[Usage example](https://github.com/mtrebi/thread-pool/blob/master/README.md#usage-example)  
-[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  
+# Table of Contents
+&nbsp;[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#introduction)  <br/> 
+&nbsp;[Thread pool](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-pool)<br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Queue](https://github.com/mtrebi/thread-pool/blob/master/README.md#queue)<br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Submit function](https://github.com/mtrebi/thread-pool/blob/master/README.md#submit-function)  <br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Thread worker](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-worker)  <br/> 
+&nbsp;[Usage example](https://github.com/mtrebi/thread-pool/blob/master/README.md#usage-example)  <br/> 
+&nbsp;[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  <br/> 
 
 # Introduction
 
