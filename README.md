@@ -260,15 +260,13 @@ We can also use the **auto** keyword for convenience:
 auto future = pool.submit(multiply, 2, 3);
 ```
 
-Nice, finally, when the pool finishes the work it will automatically update the future. Then, we can retrieve the result:
-
-So, when the work is done we know that the future will get updated and we can retrieve the result calling:
+Nice, when the work is finished by the Thread POol we know that the future will get updated and we can retrieve the result calling:
 ```c
 const int result = future.get();
 std::cout << result << std::endl;
 ```
 
-The get() function of std::future<T> always return the type T of the future.
+The get() function of std::future<T> always return the type T of the future. **This type will always be equal to the return type of the function passed to the submit method**. In this case, int.
 
 ## Case #2
 The multiply function has a parameter passed by ref:
@@ -280,7 +278,7 @@ void  multiply(int& out_res, const int a, const int b) {
 }
 ```
 
-Now, we have to call the submit function with a subtle difference. Because we are using templates and type deduction, the parameter passed by ref needs to be called using **std::ref(param)** to make sure that we are passing it by ref and not by value.
+Now, we have to call the submit function with a subtle difference. Because we are using templates and type deduction (universal references), the parameter passed by ref needs to be called using **std::ref(param)** to make sure that we are passing it by ref and not by value.
 
 ```c
 int result = 0;
@@ -291,8 +289,7 @@ future.get();
 std::cout << result << std::endl;
 ```
 
-In this case, what's the type of future? Well, it is **std::future<void>** because this multiply function is of type void. Calling future.get() returns void but it's still useful to make sure that the work has been done.
-
+In this case, what's the type of future? Well, as I said before, the return type will always be equal to the return type of the function passed to the submit method. Because this function is of type void, the future  is **std::future<void>**. Calling future.get() returns void. That's not very useful, but we still need to call .get() to make sure that the work has been done.
 
 ## Case #3
 The last case is the easiest one. Our multiply function simply prints the result:
@@ -314,7 +311,7 @@ auto future = pool.submit(multiply, 2, 3);
 future.get();
 ```
 
-In this case, we know that as soon as the multiplication is done it will be printed. If we care when this is done, we can wait for it calling future.get(), otherwise we can just continue the execution and eventually it will be done.
+In this case, we know that as soon as the multiplication is done it will be printed. If we care when this is done, we can wait for it calling future.get().
 
 Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.cpp) program for a complete example.
 
