@@ -22,26 +22,25 @@ private:
     }
 
     void operator()() {
-      std::shared_ptr<std::packaged_task<void()>> task_ptr;
-      bool empty;
+      std::function<void()> func;
+      bool dequeued;
       while (!m_pool->m_shutdown) {
         {
           std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
           if (m_pool->m_queue.empty()) {
             m_pool->m_conditional_lock.wait(lock);
           }
-          empty = m_pool->m_queue.dequeue(task_ptr);
+          dequeued = m_pool->m_queue.dequeue(func);
         }
-        if (!empty) {
-          std::packaged_task<void()>* task = task_ptr.get();
-          (*task)();
+        if (dequeued) {
+          func();
         }
       }
     }
   };
 
   bool m_shutdown;
-  SafeQueue<std::shared_ptr<std::packaged_task<void()>>> m_queue;
+  SafeQueue<std::function<void()>> m_queue;
   std::vector<std::thread> m_threads;
   std::mutex m_conditional_mutex;
   std::condition_variable m_conditional_lock;
@@ -75,13 +74,21 @@ public:
 
   // Submit a function to be executed asynchronously by the pool
   template<typename F, typename...Args>
-  std::future<void> submit(F&& f, Args&&... args) {
+  auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
     // Create a function with bounded parameters ready to execute
     std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
     // Encapsulate it into a shared ptr in order to be able to copy construct / assign 
-    std::shared_ptr<std::packaged_task<void()>> task_ptr = std::make_shared<std::packaged_task<void()>>(func);
+    auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
 
-    m_queue.enqueue((task_ptr));
+    // Wrap packaged task into void function
+    std::function<void()> wrapper_func = [task_ptr]() {
+      (*task_ptr)(); 
+    };
+
+    // Enqueue generic wrapper function
+    m_queue.enqueue(wrapper_func);
+
+    // Wake up one thread if its waiting
     m_conditional_lock.notify_one();
 
     // Return future from promise
