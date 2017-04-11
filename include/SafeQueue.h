@@ -47,5 +47,6 @@ public:
     t = std::move(m_queue.front());
     
     m_queue.pop();
+    return true;
   }
 };
