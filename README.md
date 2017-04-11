@@ -30,49 +30,6 @@ void enqueue(T& t) {
 ``` 
 To enqueue the first thing we do is lock the mutex to make sure that no one else is accessing the resource. Then, we push the element to the queue. When the lock goes out of scopes it gets automatically released. Easy, huh? This way, we make the Queue thread-safe and thus we don't have to worry many threads accessing and/or modifying it at the same "time".
 
-## Thread worker
-
-As I told you before, the behavior of the worker should look like this:
-
-1. Loop
-	1. If Queue is not empty
-		1. Unqueue work
-		2. Do it
-
-This looks quite simple but it's not very efficient. Doyou see why? What would happen if there is no work in the Queue? The threads would keep looping and asking **all the time: Is the queue empty? ** 
-
-Imagine that we have some kind of signaling system that allowed us to to sleep a thread until new work is added to the Queue, that would allow us to change the implementation:
-
-1. Loop
-	1. If Queue is empty
-		1. Wait signal
-	2. Unqueue work
-	3. Do it
-
-This is way more efficient! But, who is going the send this signal? Well, the most sensible thing is to send a signal every time we add a new element to the Queue. This way, if there is a thread waiting is going to be woken up. Otherwise it will be ignored.
-
-This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the Thread Pool class just to manage this. The final code of a worker looks like this: 
-
-```c
-void operator()() {
-	std::function<void()> func;
-	bool dequeued;
-	while (!m_pool->m_shutdown) {
-	{
-		std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
-		if (m_pool->m_queue.empty()) {
-			m_pool->m_conditional_lock.wait(lock);
-		}
-		dequeued = m_pool->m_queue.dequeue(func);
-	}
-		if (dequeued) {
-	  		func();
-		}
-	}	
-}
-
-```
-
 ## Thread pool
 
 The most important method of the Thread Pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about **what** should do and after that we will worry about **how** to do it. What:
@@ -200,6 +157,59 @@ return task_ptr->get_future();
 ```
 
 And finally, we return the future of the packaged_task. Because we are returning the future that is bound to the packaged_task _taskptr_ that, at the same time, is bound with the function _func_, executing this _taskptr_ will automatically update the future. Because we wrapped the execution of the _taskptr_ with a generic wrapper function, is the execution of _wrapperfunc_ that, in fact, updates the future. Aaaaand. since we enqueued this wrapper function, it will be executed by a thread after being dequeued calling the operator().
+
+
+## Thread worker
+
+Now that we understand how the submit method works, we're going to focus on how the work gets done. Probably, the simplest implementation of a thread worker could be using polling:
+
+1. Loop
+	1. If Queue is not empty
+		1. Unqueue work
+		2. Do it
+
+This looks alright but it's **not very efficient**. Doyou see why? What would happen if there is no work in the Queue? The threads would keep looping and asking **all the time: Is the queue empty? ** 
+
+The more sensible implementation is done by "sleeping" the threads until some work is added to the queue. As we saw before, as soon as we enqueue work, a signal **notify_one()** is sent. This allows us to implement a more efficient algorithm:
+
+1. Loop
+	1. If Queue is empty
+		1. Wait signal
+	2. Unqueue work
+	3. Do it
+
+This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the Thread Pool class just to manage this. The final code of a worker looks like this: 
+
+```c
+void operator()() {
+	std::function<void()> func;
+	bool dequeued;
+	while (!m_pool->m_shutdown) {
+	{
+		std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
+		if (m_pool->m_queue.empty()) {
+			m_pool->m_conditional_lock.wait(lock);
+		}
+		dequeued = m_pool->m_queue.dequeue(func);
+	}
+		if (dequeued) {
+	  		func();
+		}
+	}	
+}
+
+```
+
+The code is really easy to understand so I am not going to explain anything. The only thing to note here is that, _func_ is our wrapper function declared as:
+
+```c
+std::function<void()> wrapperfunc = [task_ptr]() {
+  (*task_ptr)(); 
+};
+
+```
+
+So, executing this function will automatically update the future.
 
 # Usage example
 
