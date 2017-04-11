@@ -146,14 +146,12 @@ Then, if we want to send some work to the pool we just have to call the submit f
 pool.submit(work);
 ```
 
-
-
 Deending on the type of work, I've distinguished different use-cases. Suppose that the work that we have to do is multiply two numbers. We can do it in many different ways. I've implemented the three most common ways to do it that I can imagine:
 * Use-Case #1. Function returns the result
 * Use-Case #2. Function updates by ref parameter with the result
 * Use-Case #3. Function prints the result
 
-__Note: This is just to show how the submit function works. Options are not exclusive __
+_Note: This is just to show how the submit function works. Options are not exclusive_
 
 ## Use-Case #1
 The multiply function with a return looks like this:
@@ -236,7 +234,7 @@ future.get();
 
 In this case, we know that as soon as the multiplication is done it will be printed. If we care when this is done, we can wait for it calling future.get(), otherwise we can just continue the execution and eventually it will be done.
 
-Checkout the main program for a complete example.
+Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.cpp) program for a complete example.
 
 # Future work
 
