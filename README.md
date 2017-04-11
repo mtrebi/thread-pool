@@ -1,5 +1,5 @@
 # Table of Contents  
-[Introduction](https://github.com/mtrebi/thread-pool/edit/master/README.md#Introduction)  
+[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#Introduction)  
 
 # Introduction
 
