@@ -5,6 +5,9 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Submit function](https://github.com/mtrebi/thread-pool/blob/master/README.md#submit-function)  <br/> 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Thread worker](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-worker)  <br/> 
 &nbsp;[Usage example](https://github.com/mtrebi/thread-pool/blob/master/README.md#usage-example)  <br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Use case#1](https://github.com/mtrebi/thread-pool#use-case-1)  <br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Use case#2](https://github.com/mtrebi/thread-pool#use-case-2)  <br/> 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Use case#3](https://github.com/mtrebi/thread-pool#use-case-3)  <br/> 
 &nbsp;[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  <br/> 
 
 # Introduction
