@@ -235,7 +235,14 @@ ThreadPool pool(3);
 pool.init();
 ```
 
-Then, if we want to send some work to the pool we just have to call the submit function:
+When we want to shutdown the pool just call:
+
+```c
+// Shutdown the pool, releasing all threads
+pool.shutdown()
+```
+
+Ff we want to send some work to the pool, after we have initialized it, we just have to call the submit function:
 
 ```c
 pool.submit(work);
