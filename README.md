@@ -287,7 +287,7 @@ std::cout << result << std::endl;
 
 The get() function of std::future<T> always return the type T of the future. **This type will always be equal to the return type of the function passed to the submit method**. In this case, int.
 
-## Case #2
+## Use-Case #2
 The multiply function has a parameter passed by ref:
 
 ```c
@@ -310,7 +310,7 @@ std::cout << result << std::endl;
 
 In this case, what's the type of future? Well, as I said before, the return type will always be equal to the return type of the function passed to the submit method. Because this function is of type void, the future  is **std::future<void>**. Calling future.get() returns void. That's not very useful, but we still need to call .get() to make sure that the work has been done.
 
-## Case #3
+## Use-Case #3
 The last case is the easiest one. Our multiply function simply prints the result:
 
 We have a simple function without output parameters. For this example I implemented the following multiplication function:
