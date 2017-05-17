@@ -10,6 +10,7 @@
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Use case#2](https://github.com/mtrebi/thread-pool#use-case-2)  <br/> 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[Use case#3](https://github.com/mtrebi/thread-pool#use-case-3)  <br/> 
 &nbsp;[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  <br/> 
+&nbsp;[References](https://github.com/mtrebi/thread-pool/blob/master/README.md#references)  <br/> 
 
 # Introduction
 
@@ -362,3 +363,13 @@ Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.c
 
 * Make it safer (exceptions)
 * Run benchmarks
+
+# References
+
+* [MULTI-THREADED PROGRAMMING TERMINOLOGY - 2017](http://www.bogotobogo.com/cplusplus/multithreaded.php): Fast analysis of how a multi-thread system works
+
+* [Universal References in C++11—Scott Meyers](https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers): Universal references in C++11 by Scott Meyers
+
+* [Perfect forwarding and universal references in C++](http://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c/): Article about how and when to use perfect forwarding and universal references
+
+* [C++ documentation](http://www.cplusplus.com/reference/: Thread, conditional variables, mutex and many others...
