@@ -1,0 +1,97 @@
+--- ThreadPool.h.old	Wed May 17 15:01:04 2017
++++ ThreadPool.h	Sun Nov 12 20:27:55 2017
+@@ -14,10 +14,10 @@
+ private:
+   class ThreadWorker {
+   private:
+-    int m_id;
++    size_t m_id;
+     ThreadPool * m_pool;
+   public:
+-    ThreadWorker(ThreadPool * pool, const int id)
++    ThreadWorker(ThreadPool * pool, const size_t id)
+       : m_pool(pool), m_id(id) {
+     }
+ 
+@@ -39,13 +39,20 @@
+     }
+   };
+ 
++  struct sequence {
++    size_t current;
++    sequence() { current = 0; }
++    size_t operator()() { return current++; }
++  };
++
+   bool m_shutdown;
+   SafeQueue<std::function<void()>> m_queue;
+   std::vector<std::thread> m_threads;
+   std::mutex m_conditional_mutex;
+   std::condition_variable m_conditional_lock;
++
+ public:
+-  ThreadPool(const int n_threads)
++  ThreadPool(const size_t n_threads)
+     : m_threads(std::vector<std::thread>(n_threads)), m_shutdown(false) {
+   }
+ 
+@@ -55,43 +62,45 @@
+   ThreadPool & operator=(const ThreadPool &) = delete;
+   ThreadPool & operator=(ThreadPool &&) = delete;
+ 
+-  // Inits thread pool
++  /* Inits thread pool */
+   void init() {
+-    for (int i = 0; i < m_threads.size(); ++i) {
+-      m_threads[i] = std::thread(ThreadWorker(this, i));
++    sequence m_seq;
++
++    for (auto &t : m_threads) {
++      t = std::thread(ThreadWorker(this, m_seq()));
+     }
+   }
+ 
+-  // Waits until threads finish their current task and shutdowns the pool
++  /* Waits until threads finish their current task and shutdowns the pool */
+   void shutdown() {
+     m_shutdown = true;
+     m_conditional_lock.notify_all();
+-    
+-    for (int i = 0; i < m_threads.size(); ++i) {
+-      m_threads[i].join();
++
++    for (auto &t : m_threads) {
++      t.join();
+     }
+   }
+ 
+-  // Submit a function to be executed asynchronously by the pool
++  /* Submit a function to be executed asynchronously by the pool */
+   template<typename F, typename...Args>
+   auto submit(F&& f, Args&&... args) -> std::future<decltype(f(args...))> {
+-    // Create a function with bounded parameters ready to execute
++    /* Create a function with bounded parameters ready to execute */
+     std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+-    // Encapsulate it into a shared ptr in order to be able to copy construct / assign 
++    /* Encapsulate it into a shared ptr in order to be able to copy construct / assign */
+     auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
+ 
+-    // Wrap packaged task into void function
++    /* Wrap packaged task into void function */
+     std::function<void()> wrapper_func = [task_ptr]() {
+       (*task_ptr)(); 
+     };
+ 
+-    // Enqueue generic wrapper function
++    /* Enqueue generic wrapper function */
+     m_queue.enqueue(wrapper_func);
+ 
+-    // Wake up one thread if its waiting
++    /* Wake up one thread if its waiting */
+     m_conditional_lock.notify_one();
+ 
+-    // Return future from promise
++    /* Return future from promise */
+     return task_ptr->get_future();
+   }
+ };
