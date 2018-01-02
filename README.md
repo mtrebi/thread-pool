@@ -30,7 +30,9 @@ cd build/
 cmake .. "Visual Studio 15 2017 Win64"
 ```
 
-Then, from VS you can edit and execute the project. If you are using Linux, you need to change the generator (use the default) and execute an extra operation to actually make the executable:
+Then, from VS you can edit and execute the project. Make sure that __main project is set up as the startup project__
+
+If you are using Linux, you need to change the generator (use the default) and execute an extra operation to actually make the executable:
 
 ```c
 // Linux
@@ -372,4 +374,4 @@ Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.c
 
 * [Perfect forwarding and universal references in C++](http://eli.thegreenplace.net/2014/perfect-forwarding-and-universal-references-in-c/): Article about how and when to use perfect forwarding and universal references
 
-* [C++ documentation](http://www.cplusplus.com/reference/: Thread, conditional variables, mutex and many others...
+* [C++ documentation](http://www.cplusplus.com/reference/): Thread, conditional variables, mutex and many others...
