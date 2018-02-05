@@ -68,7 +68,9 @@ public:
     m_conditional_lock.notify_all();
     
     for (int i = 0; i < m_threads.size(); ++i) {
-      m_threads[i].join();
+      if(m_threads[i].joinable()) {
+        m_threads[i].join();
+      }
     }
   }
 
