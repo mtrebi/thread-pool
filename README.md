@@ -363,8 +363,9 @@ Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.c
 
 # Future work
 
-* Make it safer (exceptions)
-* Run benchmarks
+* Make it more reliable and safer (exceptions)
+* Find a better way to use it with member functions (thanks to rajenk)
+* Run benchmarks and improve performance if needed
 
 # References
 
