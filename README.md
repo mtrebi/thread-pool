@@ -364,8 +364,9 @@ Checkout the [main](https://github.com/mtrebi/thread-pool/blob/master/src/main.c
 # Future work
 
 * Make it more reliable and safer (exceptions)
-* Find a better way to use it with member functions (thanks to rajenk)
+* Find a better way to use it with member functions (thanks to @rajenk)
 * Run benchmarks and improve performance if needed
+ * Evaluate performance and impact of std::function in the heap and try alternatives if necessary. (thanks to @JensMunkHansen) 
 
 # References
 
