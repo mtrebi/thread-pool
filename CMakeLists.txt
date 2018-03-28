@@ -10,6 +10,8 @@ include_directories (
 set(HEADERS include/SafeQueue.h include/ThreadPool.h)
  
 set(SOURCES src/main.cpp)
+
+SET(CMAKE_CXX_FLAGS -pthread)
  
 add_compile_options(
 	-std=c++11
