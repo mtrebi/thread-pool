@@ -275,7 +275,7 @@ Ff we want to send some work to the pool, after we have initialized it, we just 
 pool.submit(work);
 ```
 
-Deending on the type of work, I've distinguished different use-cases. Suppose that the work that we have to do is multiply two numbers. We can do it in many different ways. I've implemented the three most common ways to do it that I can imagine:
+Depending on the type of work, I've distinguished different use-cases. Suppose that the work that we have to do is multiply two numbers. We can do it in many different ways. I've implemented the three most common ways to do it that I can imagine:
 * Use-Case #1. Function returns the result
 * Use-Case #2. Function updates by ref parameter with the result
 * Use-Case #3. Function prints the result
