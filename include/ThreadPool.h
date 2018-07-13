@@ -18,7 +18,7 @@ private:
     ThreadPool * m_pool;
   public:
     ThreadWorker(ThreadPool * pool, const int id)
-      : m_pool(pool), m_id(id) {
+      : m_id(id), m_pool(pool) {
     }
 
     void operator()() {
@@ -39,9 +39,9 @@ private:
     }
   };
 
+  std::vector<std::thread> m_threads;
   bool m_shutdown;
   SafeQueue<std::function<void()>> m_queue;
-  std::vector<std::thread> m_threads;
   std::mutex m_conditional_mutex;
   std::condition_variable m_conditional_lock;
 public:
@@ -57,7 +57,7 @@ public:
 
   // Inits thread pool
   void init() {
-    for (int i = 0; i < m_threads.size(); ++i) {
+    for (size_t i = 0; i < m_threads.size(); ++i) {
       m_threads[i] = std::thread(ThreadWorker(this, i));
     }
   }
@@ -67,7 +67,7 @@ public:
     m_shutdown = true;
     m_conditional_lock.notify_all();
     
-    for (int i = 0; i < m_threads.size(); ++i) {
+    for (size_t i = 0; i < m_threads.size(); ++i) {
       if(m_threads[i].joinable()) {
         m_threads[i].join();
       }
