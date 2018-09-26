@@ -1,6 +1,5 @@
 #include <iostream>
 #include <random>
-#include <thread>
 
 #include "../include/ThreadPool.h"
 
