@@ -45,7 +45,7 @@ make
 
 # Thread pool 
 
-The way that I understand things better is with images. So, lets take a look at the image of Thread Pool given by wikipedia:
+The way that I understand things better is with images. So, lets take a look at the image of thread pool given by wikipedia:
 
 <p align="center">  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Thread_pool.svg/580px-Thread_pool.svg.png"> </p>
 
@@ -71,7 +71,7 @@ To enqueue the first thing we do is lock the mutex to make sure that no one else
 
 ## Submit function
 
-The most important method of the Thread Pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about **what** should do and after that we will worry about **how** to do it. What:
+The most important method of the thread pool is the one responsible of adding work to the queue. I called this method **submit**. It's not difficult to understand how it works but its implementation can seem scary at first. Let's think about **what** should do and after that we will worry about **how** to do it. What:
 * Accept any function with any parameters.
 * Return "something" immediately to avoid blocking main thread. This returned object should **eventually** contain the result of the operation.
 
@@ -217,7 +217,7 @@ The more sensible implementation is done by "sleeping" the threads until some wo
 		Unqueue work
 		Do it
 
-This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the Thread Pool class just to manage this. The final code of a worker looks like this: 
+This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the thread pool class just to manage this. The final code of a worker looks like this: 
 
 ```c
 void operator()() {
@@ -252,7 +252,7 @@ So, executing this function will automatically update the future.
 
 # Usage example
 
-Creating the Thread Pool is as easy as:
+Creating the thread pool is as easy as:
 
 ```c
 // Create pool with 3 threads
@@ -306,7 +306,7 @@ We can also use the **auto** keyword for convenience:
 auto future = pool.submit(multiply, 2, 3);
 ```
 
-Nice, when the work is finished by the Thread POol we know that the future will get updated and we can retrieve the result calling:
+Nice, when the work is finished by the thread pool we know that the future will get updated and we can retrieve the result calling:
 ```c
 const int result = future.get();
 std::cout << result << std::endl;
