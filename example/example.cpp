@@ -1,8 +1,7 @@
 #include <iostream>
 #include <random>
-#include <thread>
 
-#include "ThreadPool.h"
+#include "../include/ThreadPool.h"
 
 std::random_device rd;
 std::mt19937 mt(rd());
@@ -37,7 +36,7 @@ int multiply_return(const int a, const int b) {
 }
 
 
-int main() {
+void example() {
   // Create pool with 3 threads
   ThreadPool pool(3);
 
