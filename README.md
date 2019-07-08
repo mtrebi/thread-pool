@@ -16,9 +16,9 @@
 
 A [thread pool](https://en.wikipedia.org/wiki/Thread_pool) is a technique that allows developers to exploit the concurrency of modern processors in an **easy** and **efficient** manner. It's easy because you send "work" to the pool and somehow this work gets done without blocking the main thread. It's efficient because threads are not initialized each time we want work to be done. Threads are initialized once and remain inactive until some work has to be done. This way we minimize the overhead.
 
-There are many many Thread pool implementations in C++, many of them are probably better (safer, faster...) than mine. However,  I belive my implementation is **very straightforward and easy to understand**. 
+There are many many Thread pool implementations in C++, many of them are probably better (safer, faster...) than mine. However,  I believe my implementation is **very straightforward and easy to understand**. 
 
-__Disclaimer: Do not use this project in a professional environment. It may containt bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
+__Disclaimer: Do not use this project in a professional environment. It may contain bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
 
 # Build instructions
 
@@ -58,7 +58,7 @@ As you can see, we have three important elements here:
 
 ## Queue
 
-We use a queue to store the work because it's the more sensible data structure. We want the work to be **started** in the same order that we sent it. However, this queue is a little bit **special**. As I said in the previous section, threads are continously (well, not really, but let's assume that they are) querying the queue to ask for work. When there's work available, threads take the work from the queue and do it. What would happen if two threads try to take the same work at the same time? Well, the program would crash.
+We use a queue to store the work because it's the more sensible data structure. We want the work to be **started** in the same order that we sent it. However, this queue is a little bit **special**. As I said in the previous section, threads are continuously (well, not really, but let's assume that they are) querying the queue to ask for work. When there's work available, threads take the work from the queue and do it. What would happen if two threads try to take the same work at the same time? Well, the program would crash.
 
 To avoid this kind of problems, I implemented a wrapper over the standard C++ Queue that uses mutex to restrict the concurrent access. Let's see a small sample of the SafeQueue class:
 
@@ -116,9 +116,9 @@ Nevertheless, we're going to inspect line by line what's going on in order to fu
 template<typename F, typename...Args>
 ``` 
 
-This means that the next statemnet is templated. The first template parameter is called F (our function) and second one is a parameter pack. A parameter pack is a special template parameter that can accept zero or more template arguments. It is, in fact, a way to express a variable number of arguments in a template. A template with at least one parameter pack is called **variadic template**
+This means that the next statement is templated. The first template parameter is called F (our function) and second one is a parameter pack. A parameter pack is a special template parameter that can accept zero or more template arguments. It is, in fact, a way to express a variable number of arguments in a template. A template with at least one parameter pack is called **variadic template**
 
-Summarazing, we are telling the compiler that our submit function is going to take one generic parameter of type F (our function) and a parameter pack Args (the parameters of the function F).
+Summarizing, we are telling the compiler that our submit function is going to take one generic parameter of type F (our function) and a parameter pack Args (the parameters of the function F).
 
 #### Function declaration
 
@@ -138,16 +138,16 @@ But, we can also declare the function like this:
 auto identifier ( argument-declarations... ) -> return_type
  ```
 
-Why to sintaxes? Well, imagine that you have a function that has a return type that depends on the input parameters of the function. Using the first syntax you can't declare that function without getting a compiler error since you  would be using a variable in the return type that has not been declared yet (because the return type declaration goes before the parameters type declaration). 
+Why to syntaxes? Well, imagine that you have a function that has a return type that depends on the input parameters of the function. Using the first syntax you can't declare that function without getting a compiler error since you  would be using a variable in the return type that has not been declared yet (because the return type declaration goes before the parameters type declaration). 
 
-Using the second syntax you can declare the function to have return type **auto** then, using the -> you can declare the return type depending on the arguments of the functions that have been delcared previously. 
+Using the second syntax you can declare the function to have return type **auto** then, using the -> you can declare the return type depending on the arguments of the functions that have been declared previously. 
 
 Now, let's inspect the parameters of the submit function. When the type of a parameter is declared as **T&&** for some deducted type T that parameter is a **universal reference**. This term was coined by [Scott Meyers](https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers) because **T&&** can also mean r-value reference. However, in the context of type deduction, it means that it can be bound to both l-values and r-values, unlike l-value references that can only be bound to non-const objects (they bind only to modifiable lvalues) and r-value references (they bind only to rvalues).
 
 
 The return type of the function is of type **std::future<T>**. A std::future is a special type that provides a mechanism to access the result of asynchronous operations, in our case, the result of executing a specific function. This makes sense with what we said earlier.
 
-Finally, the template type of std::future is **decltype(f(args...))**. Decltype is a special C++ keywoard that inspects the declared type of an entity or the type and value category of an expression. In our case, we want to know the return type of the function _f_, so we give decltype our generic function _f_ and the parameter pack _args_.
+Finally, the template type of std::future is **decltype(f(args...))**. Decltype is a special C++ keyword that inspects the declared type of an entity or the type and value category of an expression. In our case, we want to know the return type of the function _f_, so we give decltype our generic function _f_ and the parameter pack _args_.
 
 #### Function body
 
@@ -156,8 +156,8 @@ Finally, the template type of std::future is **decltype(f(args...))**. Decltype 
 std::function<decltype(f(args...))()> func = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
 ``` 
 
-There are many many things happening here. First of all, the **std::bind(F, Args)** is a function that creates a wrapper for F with the given Args. Caling this wrapper is the same as calling F with the Args that it has been bound. Here, we are simply calling bind with our generic function _f_ and the parameterc pack _args_ but using another wrapper **std::forward<T>(t)** for each parameter. This second wrapper is needed to achieve perfect forwarding of universal references.
-The result of this bind call is a **std::function<T>**. The std::function<T> is a C++ object that encapsulates a function. It allows you to execute the function as if it were a normal function calling the operator() with the required parameters BUT, because it is an object, you can store it, copy it and move it around. The template type of any std::function is the signature of that function: std::function< return-type (arguments)>. In this case, we already know how to get the return type of this function using decltype. But, what about the arguments? Well, because we bound all arguments _args_ to the function _f_ we just have to add an empty pair of parenthersis that represents an empty list of arguments: **decltype(f(args...))()**.
+There are many many things happening here. First of all, the **std::bind(F, Args)** is a function that creates a wrapper for F with the given Args. Caling this wrapper is the same as calling F with the Args that it has been bound. Here, we are simply calling bind with our generic function _f_ and the parameter pack _args_ but using another wrapper **std::forward<T>(t)** for each parameter. This second wrapper is needed to achieve perfect forwarding of universal references.
+The result of this bind call is a **std::function<T>**. The std::function<T> is a C++ object that encapsulates a function. It allows you to execute the function as if it were a normal function calling the operator() with the required parameters BUT, because it is an object, you can store it, copy it and move it around. The template type of any std::function is the signature of that function: std::function< return-type (arguments)>. In this case, we already know how to get the return type of this function using decltype. But, what about the arguments? Well, because we bound all arguments _args_ to the function _f_ we just have to add an empty pair of parenthesis that represents an empty list of arguments: **decltype(f(args...))()**.
 
 
 ```c
@@ -175,7 +175,7 @@ std::function<void()> wrapperfunc = [task_ptr]() {
 
 ```
 
-Again, we create a std:.function, but, note that this time its template type is **void()**. Independently of the function _f_ and its parameters _args_ this _wrapperfun_ the return type will always be **void**. Since all functions _f_ may have different return types, the only way to store them in a container (our Queue) is wrapping them with a generic void function. Here, we are just declaring this _wrapperfunc_ to execute the actual task _taskptr_ that will execute the bound function _func_.
+Again, we create a std:.function, but, note that this time its template type is **void()**. Independently of the function _f_ and its parameters _args_ this _wrapperfunc_ the return type will always be **void**. Since all functions _f_ may have different return types, the only way to store them in a container (our Queue) is wrapping them with a generic void function. Here, we are just declaring this _wrapperfunc_ to execute the actual task _taskptr_ that will execute the bound function _func_.
 
 
 ```c
@@ -206,17 +206,17 @@ Now that we understand how the submit method works, we're going to focus on how 
 
 	 Loop
 		If Queue is not empty
-			Unqueue work
+			Dequeue work
 			Do it
 
-This looks alright but it's **not very efficient**. Doyou see why? What would happen if there is no work in the Queue? The threads would keep looping and asking all the time: Is the queue empty? 
+This looks alright but it's **not very efficient**. Do you see why? What would happen if there is no work in the Queue? The threads would keep looping and asking all the time: Is the queue empty? 
 
 The more sensible implementation is done by "sleeping" the threads until some work is added to the queue. As we saw before, as soon as we enqueue work, a signal **notify_one()** is sent. This allows us to implement a more efficient algorithm:
 
 	Loop
 		If Queue is empty
 			Wait signal
-		Unqueue work
+		Dequeue work
 		Do it
 
 This signal system is implemented in C++ with **conditional variables**. Conditional variables are always bound to a mutex, so I added a mutex to the thread pool class just to manage this. The final code of a worker looks like this: 
