@@ -138,7 +138,7 @@ But, we can also declare the function like this:
 auto identifier ( argument-declarations... ) -> return_type
  ```
 
-Why to syntaxes? Well, imagine that you have a function that has a return type that depends on the input parameters of the function. Using the first syntax you can't declare that function without getting a compiler error since you  would be using a variable in the return type that has not been declared yet (because the return type declaration goes before the parameters type declaration). 
+Why two syntaxes? Well, imagine that you have a function that has a return type that depends on the input parameters of the function. Using the first syntax you can't declare that function without getting a compiler error since you  would be using a variable in the return type that has not been declared yet (because the return type declaration goes before the parameters type declaration). 
 
 Using the second syntax you can declare the function to have return type **auto** then, using the -> you can declare the return type depending on the arguments of the functions that have been declared previously. 
 
