@@ -145,7 +145,7 @@ Using the second syntax you can declare the function to have return type **auto*
 Now, let's inspect the parameters of the submit function. When the type of a parameter is declared as **T&&** for some deducted type T that parameter is a **universal reference**. This term was coined by [Scott Meyers](https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers) because **T&&** can also mean r-value reference. However, in the context of type deduction, it means that it can be bound to both l-values and r-values, unlike l-value references that can only be bound to non-const objects (they bind only to modifiable lvalues) and r-value references (they bind only to rvalues).
 
 
-The return type of the function is of type **std::future<T>**. A std::future is a special type that provides a mechanism to access the result of asynchronous operations, in our case, the result of executing a specific function. This makes sense with what we said earlier.
+The return type of the function is of type **std::future<T>**. An std::future is a special type that provides a mechanism to access the result of asynchronous operations, in our case, the result of executing a specific function. This makes sense with what we said earlier.
 
 Finally, the template type of std::future is **decltype(f(args...))**. Decltype is a special C++ keywoard that inspects the declared type of an entity or the type and value category of an expression. In our case, we want to know the return type of the function _f_, so we give decltype our generic function _f_ and the parameter pack _args_.
 
@@ -165,7 +165,7 @@ The result of this bind call is a **std::function<T>**. The std::function<T> is 
 auto task_ptr = std::make_shared<std::packaged_task<decltype(f(args...))()>>(func);
 ```
 
-The next thing we do is we create a **std::packaged_task<T>(t)**.  A packaged_task is a wrapper around a function that can be executed asynchronously. It's result is stored in a shared state inside a std::future<T> object. The templated type T of a std::packaged_task<T>(t) is the type of the function _t_ that is wrapping. Because we said it before, the signature of the function _f_ is **decltype(f(args...))()** that is the same type of the packaged_task. Then, we just wrap again this packaged task inside a **std::shared_ptr** using the initialize function **std::make_shared**.
+The next thing we do is we create a **std::packaged_task<T>(t)**.  A packaged_task is a wrapper around a function that can be executed asynchronously. It's result is stored in a shared state inside an std::future<T> object. The templated type T of an std::packaged_task<T>(t) is the type of the function _t_ that is wrapping. Because we said it before, the signature of the function _f_ is **decltype(f(args...))()** that is the same type of the packaged_task. Then, we just wrap again this packaged task inside a **std::shared_ptr** using the initialize function **std::make_shared**.
 
 ```c
 // Wrap packaged task into void function
@@ -175,7 +175,7 @@ std::function<void()> wrapperfunc = [task_ptr]() {
 
 ```
 
-Again, we create a std:.function, but, note that this time its template type is **void()**. Independently of the function _f_ and its parameters _args_ this _wrapperfun_ the return type will always be **void**. Since all functions _f_ may have different return types, the only way to store them in a container (our Queue) is wrapping them with a generic void function. Here, we are just declaring this _wrapperfunc_ to execute the actual task _taskptr_ that will execute the bound function _func_.
+Again, we create an std:.function, but, note that this time its template type is **void()**. Independently of the function _f_ and its parameters _args_ this _wrapperfun_ the return type will always be **void**. Since all functions _f_ may have different return types, the only way to store them in a container (our Queue) is wrapping them with a generic void function. Here, we are just declaring this _wrapperfunc_ to execute the actual task _taskptr_ that will execute the bound function _func_.
 
 
 ```c
