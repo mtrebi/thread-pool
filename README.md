@@ -22,7 +22,7 @@ __Disclaimer: Do not use this project in a professional environment. It may cont
 
 # Build instructions
 
-This project has been developed using Netbeans and Linux but it should work on Windows, MAC OS and Linux. It can be easily build using CMake and different generators. The following code can be used to generate the VS 2017 project files:
+This project has been developed using Netbeans and Linux but it should work on Windows, MAC OS and Linux. It can be easily build using CMake and different other generators. The following code can be used to generate the VS 2017 project files:
 
 ```c
 // VS 2017
@@ -47,7 +47,7 @@ make
 
 # Thread pool 
 
-The way that I understand things better is with images. So, lets take a look at the image of thread pool given by wikipedia:
+The way that I understand things better is with images. So, let's take a look at the image of thread pool given by wikipedia:
 
 <p align="center">  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Thread_pool.svg/580px-Thread_pool.svg.png"> </p>
 
@@ -60,7 +60,7 @@ As you can see, we have three important elements here:
 
 We use a queue to store the work because it's the more sensible data structure. We want the work to be **started** in the same order that we sent it. However, this queue is a little bit **special**. As I said in the previous section, threads are continuously (well, not really, but let's assume that they are) querying the queue to ask for work. When there's work available, threads take the work from the queue and do it. What would happen if two threads try to take the same work at the same time? Well, the program would crash.
 
-To avoid this kind of problems, I implemented a wrapper over the standard C++ Queue that uses mutex to restrict the concurrent access. Let's see a small sample of the SafeQueue class:
+To avoid these kinds of problems, I implemented a wrapper over the standard C++ Queue that uses mutex to restrict the concurrent access. Let's see a small sample of the SafeQueue class:
 
 ```c
 void enqueue(T& t) {
