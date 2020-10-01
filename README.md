@@ -34,7 +34,7 @@ cmake .. "Visual Studio 15 2017 Win64"
 
 Then, from VS you can edit and execute the project. Make sure that __main project is set up as the startup project__
 
-If you are using Linux, you need to change the generator (use the default) and execute an extra operation to actually make the executable:
+If you are using Linux, you need to change the generator (use the default) and execute an extra operation to actually make it executable:
 
 ```c
 // Linux
@@ -47,7 +47,7 @@ make
 
 # Thread pool 
 
-The way that I understand things better is with images. So, let's take a look at the image of thread pool given by wikipedia:
+The way that I understand things better is with images. So, let's take a look at the image of thread pool given by Wikipedia:
 
 <p align="center">  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Thread_pool.svg/580px-Thread_pool.svg.png"> </p>
 
