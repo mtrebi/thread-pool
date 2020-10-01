@@ -1,4 +1,4 @@
-# Table of Contents
+# Important Table of Contents
 &nbsp;[Introduction](https://github.com/mtrebi/thread-pool/blob/master/README.md#introduction)  <br/> 
 &nbsp;[Build instructions](https://github.com/mtrebi/thread-pool/blob/master/README.md#build-instructions)  <br/> 
 &nbsp;[Thread pool](https://github.com/mtrebi/thread-pool/blob/master/README.md#thread-pool)<br/> 
@@ -12,13 +12,13 @@
 &nbsp;[Future work](https://github.com/mtrebi/thread-pool/blob/master/README.md#future-work)  <br/> 
 &nbsp;[References](https://github.com/mtrebi/thread-pool/blob/master/README.md#references)  <br/> 
 
-# Introduction
+# Introduction to our framework
 
 A [thread pool](https://en.wikipedia.org/wiki/Thread_pool) is a technique that allows developers to exploit the concurrency of modern processors in an **easy** and **efficient** manner. It's easy because you send "work" to the pool and somehow this work gets done without blocking the main thread. It's efficient because threads are not initialized each time we want work to be done. Threads are initialized once and remain inactive until some work has to be done. This way we minimize the overhead.
 
 There are many many Thread pool implementations in C++, many of them are probably better (safer, faster...) than mine. However,  I believe my implementation is **very straightforward and easy to understand**. 
 
-__Disclaimer: Do not use this project in a professional environment. It may contain bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
+__Disclaimer: Please Do not use this project in a professional environment. It may contain bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
 
 # Build instructions
 
