@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "SafeQueue.h"
-
+using namespace std;
 class ThreadPool {
 private:
   class ThreadWorker {
