@@ -18,7 +18,7 @@ A [thread pool](https://en.wikipedia.org/wiki/Thread_pool) is a technique that a
 
 There are many more Thread pool implementations in C++, many of them are probably better (safer, faster...) than mine. However,I believe my implementation are **very straightforward and easy to understand**. 
 
-__Disclaimer: Do not use this project in a professional environment. It may contain bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
+__Disclaimer: Please Do not use this project in a professional environment. It may contain bugs and/or not work as expected.__ I did this project to learn how C++11 Threads work and provide an easy way for other people to understand it too. 
 
 # Build instructions:
 
