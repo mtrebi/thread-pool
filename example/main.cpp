@@ -36,7 +36,8 @@ int multiply_return(const int a, const int b) {
 }
 
 
-void example() {
+int main(int argc, char *argv[])
+{
   // Create pool with 3 threads
   ThreadPool pool(3);
 
@@ -66,4 +67,6 @@ void example() {
   std::cout << "Last operation result is equals to " << res << std::endl;
   
   pool.shutdown();
+
+  return 0;
 }

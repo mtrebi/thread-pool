@@ -9,7 +9,7 @@ include_directories (
  
 set(HEADERS include/SafeQueue.h include/ThreadPool.h)
  
-set(SOURCES src/main.cpp)
+set(SOURCES example/main.cpp)
 
 SET(CMAKE_CXX_FLAGS -pthread)
  
