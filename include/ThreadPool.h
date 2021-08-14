@@ -36,6 +36,18 @@ private:
           func();
         }
       }
+
+      // If the task queue is not empty, continue obtain task from task queue, 
+      // the multithread continues execution until the queue is empty
+      while (!m_pool->m_queue.empty()) {
+        {
+          std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
+          dequeued = m_pool->m_queue.dequeue(func);
+          if (dequeued) {
+            func();
+          }
+        }
+      }
     }
   };
 
