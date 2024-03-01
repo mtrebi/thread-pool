@@ -24,9 +24,13 @@ private:
     void operator()() {
       std::function<void()> func;
       bool dequeued;
-      while (!m_pool->m_shutdown) {
+      while (true) {
         {
           std::unique_lock<std::mutex> lock(m_pool->m_conditional_mutex);
+          if (m_pool->m_shutdown)
+          {
+            break;
+          }
           if (m_pool->m_queue.empty()) {
             m_pool->m_conditional_lock.wait(lock);
           }
@@ -64,8 +68,11 @@ public:
 
   // Waits until threads finish their current task and shutdowns the pool
   void shutdown() {
-    m_shutdown = true;
-    m_conditional_lock.notify_all();
+    {
+      std::unique_lock<std::mutex> lock(m_conditional_mutex);
+      m_shutdown = true;
+      m_conditional_lock.notify_all();
+    }
     
     for (int i = 0; i < m_threads.size(); ++i) {
       if(m_threads[i].joinable()) {
