@@ -15,7 +15,8 @@ public:
   }
 
   SafeQueue(SafeQueue& other) {
-    //TODO:
+    std::unique_lock<std::mutex> lock(other.m_mutex);
+    m_queue = other.m_queue;
   }
 
   ~SafeQueue() {
